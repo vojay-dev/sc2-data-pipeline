@@ -1,4 +1,14 @@
-# Setup notes
+# StarCraft 2 Data Pipeline with Airflow, DuckDB and Streamlit
+
+## Airflow DAG
+
+![DAG](./doc/dag.png)
+
+## Streamlit Dashboard
+
+![Dashboard](./doc/dashboard.png)
+
+## Setup notes
 
 ```sh
 # Create venv
