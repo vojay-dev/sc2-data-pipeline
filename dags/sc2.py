@@ -2,7 +2,7 @@ import logging
 
 import pendulum
 import requests
-from airflow.decorators import dag, task
+from airflow.decorators import dag, task, task_group
 from airflow.models import Variable
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
@@ -20,34 +20,29 @@ BASE_URI = "https://eu.api.blizzard.com"
 REGION_ID = 2  # Europe
 
 # retry strategy for contacting the StarCraft 2 API
-max_retries = 4
-backoff_factor = 2
+MAX_RETRIES = 4
+BACKOFF_FACTOR = 2
 
 
 @dag(start_date=pendulum.now())
 def sc2():
-    retry_strategy = Retry(total=max_retries, backoff_factor=backoff_factor)
+    retry_strategy = Retry(total=MAX_RETRIES, backoff_factor=BACKOFF_FACTOR)
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session = requests.Session()
     session.mount('https://', adapter)
 
     @task
     def get_access_token() -> str:
-        data = {
-            "grant_type": "client_credentials"
-        }
-
+        data = {"grant_type": "client_credentials"}
         response = session.post("https://oauth.battle.net/token", data=data, auth=(CLIENT_ID, CLIENT_SECRET))
         return response.json()["access_token"]
 
     @task
     def get_grandmaster_ladder_data(token: str):
-        headers = {
-            "Authorization": f"Bearer {token}",
-        }
+        headers = {"Authorization": f"Bearer {token}"}
 
         response = session.get(f"{BASE_URI}/sc2/ladder/grandmaster/{REGION_ID}", headers=headers)
-        ladder_teams = response.json()["ladderTeams"]
+        ladder_teams = response.json().get("ladderTeams", [])
         return [{
             "id": lt["teamMembers"][0]["id"],
             "realm": lt["teamMembers"][0]["realm"],
@@ -64,9 +59,7 @@ def sc2():
         } for lt in ladder_teams if lt["teamMembers"] and len(lt["teamMembers"]) == 1]
 
     def get_profile_metadata(token, region, realm, player_id):
-        headers = {
-            "Authorization": f"Bearer {token}",
-        }
+        headers = {"Authorization": f"Bearer {token}"}
 
         response = session.get(f"{BASE_URI}/sc2/metadata/profile/{region}/{realm}/{player_id}", headers=headers)
         return response.json() if response.status_code == 200 else None
@@ -75,14 +68,13 @@ def sc2():
     def enrich_data(token, data):
         logger.info("Fetching metadata for %d players", len(data))
 
-        i = 0
-        for player in data:
-            logger.info("Fetching metadata for player %d/%d", i := i + 1, len(data))
-
+        for i, player in enumerate(data, start=1):
+            logger.info("Fetching metadata for player %d/%d", i, len(data))
             metadata = get_profile_metadata(token, player["region"], player["realm"], player["id"])
-            player["profile_url"] = metadata["profileUrl"] if metadata else None
-            player["avatar_url"] = metadata["avatarUrl"] if metadata else None
-            player["name"] = metadata["name"] if metadata else None
+
+            player["profile_url"] = metadata.get("profileUrl") if metadata else None
+            player["avatar_url"] = metadata.get("avatarUrl") if metadata else None
+            player["name"] = metadata.get("name") if metadata else None
 
         return data
 
@@ -91,7 +83,7 @@ def sc2():
         return pd.DataFrame(data)
 
     @task
-    def store_data(ladder_df: pd.DataFrame):
+    def store_data_in_duckdb(ladder_df: pd.DataFrame):
         conn = duckdb.connect(DUCK_DB)
         conn.sql(f"""
             DROP TABLE IF EXISTS ladder;
@@ -99,11 +91,18 @@ def sc2():
             SELECT * FROM ladder_df;
         """)
 
-    access_token = get_access_token()
-    ladder_data = get_grandmaster_ladder_data(access_token)
-    enriched_data = enrich_data(access_token, ladder_data)
-    df = create_pandas_df(enriched_data)
-    store_data(df)
+    @task_group
+    def get_data():
+        access_token = get_access_token()
+        ladder_data = get_grandmaster_ladder_data(access_token)
+        return enrich_data(access_token, ladder_data)
+
+    @task_group
+    def store_data(enriched_data):
+        df = create_pandas_df(enriched_data)
+        store_data_in_duckdb(df)
+
+    store_data(get_data())
 
 
 sc2()
