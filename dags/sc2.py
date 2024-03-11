@@ -58,14 +58,14 @@ def sc2():
             "join_timestamp": lt["joinTimestamp"]
         } for lt in ladder_teams if lt["teamMembers"] and len(lt["teamMembers"]) == 1]
 
-    def get_profile_metadata(token, region, realm, player_id):
+    def get_profile_metadata(token: str, region: str, realm: int, player_id: int) -> dict:
         headers = {"Authorization": f"Bearer {token}"}
 
         response = session.get(f"{BASE_URI}/sc2/metadata/profile/{region}/{realm}/{player_id}", headers=headers)
         return response.json() if response.status_code == 200 else None
 
     @task
-    def enrich_data(token, data):
+    def enrich_data(token: str, data: list) -> list:
         logger.info("Fetching metadata for %d players", len(data))
 
         for i, player in enumerate(data, start=1):
@@ -79,11 +79,11 @@ def sc2():
         return data
 
     @task
-    def create_pandas_df(data):
+    def create_pandas_df(data: list) -> pd.DataFrame:
         return pd.DataFrame(data)
 
     @task
-    def store_data_in_duckdb(ladder_df: pd.DataFrame):
+    def store_data_in_duckdb(ladder_df: pd.DataFrame) -> None:
         conn = duckdb.connect(DUCK_DB)
         conn.sql(f"""
             DROP TABLE IF EXISTS ladder;
@@ -92,13 +92,13 @@ def sc2():
         """)
 
     @task_group
-    def get_data():
+    def get_data() -> list:
         access_token = get_access_token()
         ladder_data = get_grandmaster_ladder_data(access_token)
         return enrich_data(access_token, ladder_data)
 
     @task_group
-    def store_data(enriched_data):
+    def store_data(enriched_data: list) -> None:
         df = create_pandas_df(enriched_data)
         store_data_in_duckdb(df)
 
