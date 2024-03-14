@@ -6,7 +6,7 @@
 This project is not only a source for knowledge sharing but also a celebration of my love for gaming and the
 endless possibilities that data holds. It is a fusion of our two great passions: gaming and Data Engineering. I grew up
 playing StarCraft: Brood War as well as StarCraft II a lot. I never made it to the grandmaster ladder, but I enjoyed every
-match experiencing the adrenaline rush of commanding armies, outmaneuvering opponents, and claiming victory
+match experiencing the adrenaline rush of commanding armies, outmanoeuvring opponents, and claiming victory
 (from time to time at least).
 
 Just as I fine-tuned my build orders and adapt to enemy tactics in StarCraft, I am now optimizing data pipelines,
