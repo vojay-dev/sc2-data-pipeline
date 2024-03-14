@@ -2,6 +2,30 @@
 
 ![DAG](./doc/starcraft-duckdb.png)
 
+This project is not only a source for knowledge sharing but also a celebration of my love for gaming and the
+endless possibilities that data holds. It is a fusion of our two great passions: gaming and Data Engineering. I grew up
+playing StarCraft: Brood War as well as StarCraft II a lot. I never made it to the grandmaster ladder, but I enjoyed every
+match experiencing the adrenaline rush of commanding armies, outmaneuvering opponents, and claiming victory
+(from time to time at least).
+
+Just as I fine-tuned my build orders and adapt to enemy tactics in StarCraft, I am now optimizing data pipelines,
+analyze trends, and visualize insights as a Data Engineer. In this project I would like to share knowledge about three
+useful technologies of today's modern data stacks, which are namely:
+
+* ⏱️ **[Apache Airflow](https://airflow.apache.org/)**: Platform for orchestrating and scheduling complex workflows.
+* 🦆 **[DuckDB](https://duckdb.org/)**: Lightweight and versatile analytical database.
+* 🚀 **[Streamlit](https://streamlit.io/)**: User-friendly framework for building interactive web applications.
+
+This project is basically a StarCraft II data pipeline, where data is fetched from the StarCraft II API and stored in
+DuckDB, orchestrated via Airflow. There is also a Streamlit app to visualize how the current grandmaster ladder
+in StarCraft II looks like (spoiler: you will not find me in it).
+
+In `playground.py` you find more examples how to utilize DuckDB and Pandas to analyze the data.
+
+You can find more in my article: https://vojay.de/2024/03/14/starcraft-data-pipeline/
+
+This is our final result:
+
 ## Airflow DAG
 
 ![DAG](./doc/dag.png)
