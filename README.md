@@ -1,5 +1,7 @@
 # StarCraft 2 Data Pipeline with Airflow, DuckDB and Streamlit
 
+![DAG](./doc/starcraft-duckdb.png)
+
 ## Airflow DAG
 
 ![DAG](./doc/dag.png)
