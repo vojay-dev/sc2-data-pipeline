@@ -25,7 +25,7 @@ In `playground.py` you find more examples how to utilize DuckDB and Pandas to an
 
 You can find more in my article: https://vojay.de/2024/03/14/starcraft-data-pipeline/
 
-This is our final result:
+This is the final result:
 
 ## Airflow DAG
 
