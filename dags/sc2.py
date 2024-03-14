@@ -84,12 +84,12 @@ def sc2():
 
     @task
     def store_data_in_duckdb(ladder_df: pd.DataFrame) -> None:
-        conn = duckdb.connect(DUCK_DB)
-        conn.sql(f"""
-            DROP TABLE IF EXISTS ladder;
-            CREATE TABLE ladder AS
-            SELECT * FROM ladder_df;
-        """)
+        with duckdb.connect(DUCK_DB) as conn:
+            conn.sql(f"""
+                DROP TABLE IF EXISTS ladder;
+                CREATE TABLE ladder AS
+                SELECT * FROM ladder_df;
+            """)
 
     @task_group
     def get_data() -> list:
