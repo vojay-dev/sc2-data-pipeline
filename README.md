@@ -1,6 +1,7 @@
 # StarCraft 2 Data Pipeline with Airflow, DuckDB and Streamlit
 
 ![DAG](./doc/starcraft-duckdb.png)
+*Logo based on StarCraft II [press kit](https://blizzard.gamespress.com/starcraft)*
 
 This project is not only a source for knowledge sharing but also a celebration of my love for gaming and the
 endless possibilities that data holds. It is a fusion of our two great passions: gaming and Data Engineering. I grew up
